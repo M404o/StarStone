@@ -1,23 +1,12 @@
-# StarStone Daily Deck (Static Web App)
-
-毎朝1枚、ランダムにカードを引いて「小さな行動」を決めるミニマルな儀式アプリ。  
-**天然石 × 星 × カード** の世界観で、30枚のフルデッキを同梱。
+# StarStone Daily Deck — v2
+**Gem & Moon Visuals 搭載版**  
+- 天然石ごとの色調パレット → 背景星雲＋宝石ハイライトを自動描画  
+- 月カードは**当日の月相**をライブ描画（新月〜満月の位相を近似計算）  
+- めくりアニメ（flip）で体験のワクワクを追加  
 
 ## 使い方
-1. このフォルダを任意のホスティング（GitHub Pages / Netlify / Vercel Static / Firebase Hosting 等）に配置
-2. `index.html` を開く（ローカルでもOK。Chromeで動作確認）
-3. 「カードをめくる」→ 画像保存 or テキストコピーでSNSに共有
-
-## 構成
-- `deck.json` : 30枚のカード定義（石・シンボル・行動）
-- `app.js` : ランダムドロー、キャンバス描画、保存/コピー
-- `style.css` : ミニマルなダークテーマ
+ZIPを解凍し、`index.html` を開くだけ。v1と同じ。`deck.json` は互換。
 
 ## カスタム
-- カードを増減する: `deck.json` を編集
-- ロゴ/クレジットON/OFF: 画面のトグル or デフォルトはON
-- 色味やフォント: `style.css` / `app.js` の描画フォントを調整
-
----
-
-© StarStone Deck — Make your morning a little cosmic.
+- パレットを増やす：`app.js` の `STONE` マップに石名キーで色を追加  
+- 月相ロジック：`moonPhase01()` を差し替え可能（高精度化したい場合）

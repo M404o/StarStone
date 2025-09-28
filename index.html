@@ -3,22 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>StarStone Daily Deck</title>
+  <title>StarStone Daily Deck — v2</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <main>
     <header>
-      <h1>StarStone Daily Deck</h1>
-      <p class="tagline">毎朝1枚、宇宙の小さな儀式。</p>
+      <h1>StarStone Daily Deck <span class="badge">v2</span></h1>
+      <p class="tagline">毎朝1枚、宇宙の小さな儀式。— Gem & Moon Visuals</p>
     </header>
 
     <section id="card-area">
-      <canvas id="card-canvas" width="800" height="1200" aria-label="card canvas"></canvas>
-      <div id="card-content" class="hidden">
-        <div class="symbol" id="symbol"></div>
-        <div class="label" id="label"></div>
-        <div class="action" id="action"></div>
+      <div class="card-wrap">
+        <canvas id="card-canvas" width="800" height="1200" aria-label="card canvas"></canvas>
       </div>
     </section>
 
