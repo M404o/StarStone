@@ -3,28 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>StarStone Demo Rare</title>
+  <title>StarStone — Flip & Rare</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <main>
     <header>
-      <h1>StarStone Demo <span class="badge">Rare 100%</span></h1>
-      <p class="tagline">毎回レア演出＋日付スタンプ付きデモ版</p>
+      <h1>StarStone <span class="badge">Flip + Rare</span></h1>
+      <p class="tagline">流れ星なし。背景×金縁で“当たり感”。</p>
     </header>
 
     <section id="card-area">
-      <canvas id="card-canvas" width="800" height="1200"></canvas>
+      <div class="card-wrap">
+        <canvas id="card-canvas" width="800" height="1200"></canvas>
+      </div>
     </section>
 
     <section id="controls">
       <button id="draw-btn">カードをめくる</button>
       <button id="save-btn" disabled>画像を保存</button>
       <button id="copy-btn" disabled>テキストをコピー</button>
+      <label class="toggle">
+        <input type="checkbox" id="demo-rare">
+        <span>デモ：常にレア（金縁）</span>
+      </label>
     </section>
 
     <footer>
-      <small>© StarStone Deck — Demo Rare ver.</small>
+      <small>© StarStone Deck</small>
     </footer>
   </main>
   <script src="app.js"></script>
