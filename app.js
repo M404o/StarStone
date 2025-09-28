@@ -1,18 +1,22 @@
-// ===== StarStone Demo Rare (move-then-freeze meteor, 1s) =====
+// ==== StarStone Flip + Rare (no meteor) ====
 async function loadDeck(){ const r = await fetch('deck.json'); return await r.json(); }
-function randInt(n){return Math.floor(Math.random()*n)}
+function randInt(n){ return Math.floor(Math.random()*n) }
 
-// 簡易パレット（必要なら追加してOK）
+// 石ごとの色（bg1, bg2, core）
 const STONE = {
   "ルビー":["#2a0016","#9a003b","#ff2a6d"],
   "アメジスト":["#0c0220","#4a0a8a","#cdb6ff"],
   "ムーンストーン":["#060912","#21304a","#bcd7ff"],
   "ラピスラズリ":["#02081f","#0c2a6b","#8fb3ff"],
   "ローズクォーツ":["#12070f","#5a1c4a","#ffb6d9"],
+  "ターコイズ":["#001f1f","#008a8a","#7af2f2"],
+  "ガーネット":["#22000a","#5a001b","#ff4d6d"],
+  "ペリドット":["#0a1600","#3b8a00","#b8ff57"],
+  "クリスタル":["#070a12","#1a2448","#eaf2ff"],
 };
 
-function gradientBackground(ctx, w, h, stone){
-  const pal = STONE[stone]||["#0c1024","#1a2448","#a7b3ff"];
+function bg(ctx,w,h,stone){
+  const pal = STONE[stone] || ["#0c1024","#1a2448","#a7b3ff"];
   const g = ctx.createLinearGradient(0,0,w,h);
   g.addColorStop(0,pal[0]); g.addColorStop(1,pal[1]);
   ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
@@ -31,10 +35,12 @@ function gradientBackground(ctx, w, h, stone){
   }
 }
 
-function drawBaseCard(ctx, w, h, card){
-  gradientBackground(ctx, w, h, card.stone);
-  // 金枠（デモは常にレア）
-  ctx.strokeStyle='gold'; ctx.lineWidth=5;
+function drawCard(ctx,w,h,card,{rare=false}={}){
+  bg(ctx,w,h,card.stone);
+
+  // 枠：レアは金、通常は淡い青
+  ctx.lineWidth = rare ? 6 : 3;
+  ctx.strokeStyle = rare ? 'gold' : 'rgba(200,220,255,.45)';
   ctx.strokeRect(28,28,w-56,h-56);
 
   // 宝石サークル
@@ -51,24 +57,25 @@ function drawBaseCard(ctx, w, h, card){
 
   // タイトル
   ctx.font='700 44px system-ui,-apple-system,Segoe UI,Roboto';
-  ctx.fillText('🌟 Rare StarStone! '+card.label, cx, 500);
+  const title = (rare? '🌟 Rare StarStone! ' : '') + card.label;
+  ctx.fillText(title, cx, 500);
 
   // 区切り線
-  ctx.strokeStyle='rgba(200,220,255,.25)'; ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(200,220,255,.25)';
+  ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(140,540); ctx.lineTo(w-140,540); ctx.stroke();
 
-  // アクション
+  // アクション（簡易折り返し）
   ctx.font='28px system-ui,-apple-system,Segoe UI,Roboto';
   ctx.textAlign='left'; ctx.fillStyle='#dbe2ff';
   const text='👉 '+(card.action||'');
   const x=110, y=620, maxWidth=w-220;
-  // 日本語簡易折り返し
   const lines=[]; let buf=''; const limit=18, lh=46;
   for(const ch of text){ buf+=ch; if(buf.length>=limit){ lines.push(buf); buf=''; } }
   if(buf) lines.push(buf);
   let yy=y; for(const line of lines){ ctx.fillText(line,x,yy,maxWidth); yy+=lh; }
 
-  // 日付スタンプ（白でクッキリ）
+  // 日付スタンプ（白でくっきり）
   const d=new Date();
   const ds=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
   ctx.textAlign='right'; ctx.fillStyle='#fff';
@@ -76,125 +83,52 @@ function drawBaseCard(ctx, w, h, card){
   ctx.fillText(ds, w-40, h-40);
 }
 
-// 流れ星アニメ：1秒で流れて停止 → その最終フレームを「写真の一瞬」として残す
-function animateMeteorFreeze(canvas, card){
-  const ctx=canvas.getContext('2d');
-  const w=canvas.width, h=canvas.height;
+async function main(){
+  const deck = await loadDeck();
+  const canvas = document.getElementById('card-canvas');
+  const ctx = canvas.getContext('2d');
+  const drawBtn = document.getElementById('draw-btn');
+  const saveBtn = document.getElementById('save-btn');
+  const copyBtn = document.getElementById('copy-btn');
+  const demoRare = document.getElementById('demo-rare');
 
-  // ランダムな出現位置とベクトル
-  const startX = Math.random()*w*0.6;                  // 左～中央から
-  const startY = 80 + Math.random()*(h*0.4);           // 上寄り
-  const dx = 220 + Math.random()*160;                  // 右下方向へ
-  const dy = -80 + Math.random()*60;                   // 斜め上/下に少し
-  const duration = 1000;                               // 1秒
-  const trail = [];                                     // 残像用
+  let current = null;
 
-  const t0 = performance.now();
-
-  function step(tnow){
-    const t = Math.min(1, (tnow - t0) / duration);     // 0→1
-    // 背景＋カードを毎フレーム再描画（残像綺麗にするため）
-    drawBaseCard(ctx, w, h, card);
-
-    // 今の位置（イーズアウトでスッ→止まる）
-    const ease = 1 - Math.pow(1 - t, 2);               // quadratic easeOut
-    const x = startX + dx*ease;
-    const y = startY + dy*ease;
-
-    // 残像を記録
-    trail.push({x,y,ts:tnow});
-    // 最新20個だけ
-    while(trail.length>20) trail.shift();
-
-    // 残像を描画（古いほど透明）
-    for(let i=0;i<trail.length;i++){
-      const a = (i+1)/trail.length;                    // 0→1
-      ctx.strokeStyle = `rgba(255,255,220,${a*0.9})`;
-      ctx.lineWidth = 3*a + 0.5;
-      ctx.beginPath();
-      ctx.moveTo(trail[i].x-140*a, trail[i].y+45*a);
-      ctx.lineTo(trail[i].x, trail[i].y);
-      ctx.stroke();
-    }
-
-    // 星屑スパークル（レア演出）
-    for(let i=0;i<24;i++){
-      const sx = x - 60 + Math.random()*120;
-      const sy = y - 60 + Math.random()*120;
-      const r = Math.random()*1.6 + 0.4;
-      const g = ctx.createRadialGradient(sx,sy,0,sx,sy,r*2);
-      g.addColorStop(0,'rgba(255,255,255,.9)');
-      g.addColorStop(1,'transparent');
-      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(sx,sy,r*2,0,Math.PI*2); ctx.fill();
-    }
-
-    if (t < 1){
-      requestAnimationFrame(step);
-    } else {
-      // 完了：最終フレームをもう一度描いて“写真”のように静止
-      drawBaseCard(ctx, w, h, card);
-      // 残像を薄めに重ねて、止まった瞬間を切り取る
-      ctx.strokeStyle='rgba(255,255,200,.95)';
-      ctx.lineWidth=3.5;
-      ctx.beginPath();
-      ctx.moveTo(x-150, y+50);
-      ctx.lineTo(x, y);
-      ctx.stroke();
-      // 余韻スパークル
-      for(let i=0;i<30;i++){
-        const sx = x - 70 + Math.random()*140;
-        const sy = y - 70 + Math.random()*140;
-        const r = Math.random()*1.8 + 0.6;
-        const g = ctx.createRadialGradient(sx,sy,0,sx,sy,r*2.4);
-        g.addColorStop(0,'rgba(255,255,255,.9)');
-        g.addColorStop(1,'transparent');
-        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(sx,sy,r*2.4,0,Math.PI*2); ctx.fill();
-      }
-    }
+  function flip(){
+    canvas.classList.add('flipping');
+    setTimeout(()=>canvas.classList.remove('flipping'), 300);
   }
 
-  requestAnimationFrame(step);
-}
-
-function drawCardAndMeteor(canvas, card){
-  // まずベースカード
-  const ctx=canvas.getContext('2d');
-  drawBaseCard(ctx, canvas.width, canvas.height, card);
-  // すぐ流れ星アニメ → 1秒後に静止画状態で残る
-  animateMeteorFreeze(canvas, card);
-}
-
-async function main(){
-  const deck=await loadDeck();
-  const canvas=document.getElementById('card-canvas');
-  const drawBtn=document.getElementById('draw-btn');
-  const saveBtn=document.getElementById('save-btn');
-  const copyBtn=document.getElementById('copy-btn');
-  let current=null;
-
-  drawBtn.addEventListener('click',()=>{
-    current=deck[randInt(deck.length)];
-    drawCardAndMeteor(canvas, current);   // ← 動いて止まる版
-    saveBtn.disabled=false; copyBtn.disabled=false;
+  drawBtn.addEventListener('click', ()=>{
+    flip();
+    // レア抽選（デモチェック時は常にレア）
+    const rare = demoRare.checked ? true : (Math.random() < 0.05); // 5%
+    current = deck[randInt(deck.length)];
+    setTimeout(()=>{ drawCard(ctx, canvas.width, canvas.height, current, {rare}); }, 150);
+    saveBtn.disabled = false;
+    copyBtn.disabled = false;
+    // 保存・コピー時用に保持
+    canvas.dataset.rare = rare ? '1' : '0';
   });
 
-  saveBtn.addEventListener('click',()=>{
-    if(!current)return;
-    const link=document.createElement('a');
-    link.download=`StarStone-${current.id}.png`;
-    link.href=canvas.toDataURL('image/png');
+  saveBtn.addEventListener('click', ()=>{
+    if(!current) return;
+    const link = document.createElement('a');
+    link.download = `StarStone-${current.id}.png`;
+    link.href = canvas.toDataURL('image/png');
     link.click();
   });
 
-  copyBtn.addEventListener('click',async()=>{
-    if(!current)return;
+  copyBtn.addEventListener('click', async ()=>{
+    if(!current) return;
     const d=new Date();
     const ds=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
-    const text=`【今日のStarStone】\n🌟 Rare StarStone! ${current.label}\n${current.action}\n#今日のStarStone 🌟 ${ds}`;
+    const rareMark = canvas.dataset.rare === '1' ? ' 🌟' : '';
+    const text = `【今日のStarStone】${rareMark}\n${current.label}\n${current.action}\n#今日のStarStone${rareMark} ${ds}`;
     await navigator.clipboard.writeText(text);
     copyBtn.textContent='コピー済み！';
-    setTimeout(()=>copyBtn.textContent='テキストをコピー',1500);
+    setTimeout(()=>copyBtn.textContent='テキストをコピー', 1500);
   });
 }
 main();
-// ===== end =====
+// ==== end ====
