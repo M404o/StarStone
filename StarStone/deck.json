@@ -1,0 +1,242 @@
+[
+  {
+    "id": "z-aries",
+    "label": "牡羊座 × ルビー",
+    "category": "zodiac",
+    "symbol": "♈",
+    "stone": "ルビー",
+    "action": "小さく勢いをつける。30秒だけ『今すぐできる一歩』を実行。"
+  },
+  {
+    "id": "z-taurus",
+    "label": "牡牛座 × エメラルド",
+    "category": "zodiac",
+    "symbol": "♉",
+    "stone": "エメラルド",
+    "action": "五感を満たす。温かい飲み物をゆっくり味わう。"
+  },
+  {
+    "id": "z-gemini",
+    "label": "双子座 × シトリン",
+    "category": "zodiac",
+    "symbol": "♊",
+    "stone": "シトリン",
+    "action": "頭の換気。窓を開け、深呼吸3回してから1行メモ。"
+  },
+  {
+    "id": "z-cancer",
+    "label": "蟹座 × ムーンストーン",
+    "category": "zodiac",
+    "symbol": "♋",
+    "stone": "ムーンストーン",
+    "action": "自分に優しい言葉を一つ、声に出して伝える。"
+  },
+  {
+    "id": "z-leo",
+    "label": "獅子座 × タイガーアイ",
+    "category": "zodiac",
+    "symbol": "♌",
+    "stone": "タイガーアイ",
+    "action": "姿勢を正して1分。胸を開き、今日はこれをやると宣言。"
+  },
+  {
+    "id": "z-virgo",
+    "label": "乙女座 × ペリドット",
+    "category": "zodiac",
+    "symbol": "♍",
+    "stone": "ペリドット",
+    "action": "机上を60秒だけ整える。不要なものを1つだけ退ける。"
+  },
+  {
+    "id": "z-libra",
+    "label": "天秤座 × ラピスラズリ",
+    "category": "zodiac",
+    "symbol": "♎",
+    "stone": "ラピスラズリ",
+    "action": "誰か一人に短い感謝メッセージを送る。"
+  },
+  {
+    "id": "z-scorpio",
+    "label": "蠍座 × オブシディアン",
+    "category": "zodiac",
+    "symbol": "♏",
+    "stone": "オブシディアン",
+    "action": "余計なタスクを1つだけ切り捨てる。『今日はやらない』を選ぶ。"
+  },
+  {
+    "id": "z-sagittarius",
+    "label": "射手座 × ターコイズ",
+    "category": "zodiac",
+    "symbol": "♐",
+    "stone": "ターコイズ",
+    "action": "外を10歩だけ歩く。空を見上げて深呼吸。"
+  },
+  {
+    "id": "z-capricorn",
+    "label": "山羊座 × アメジスト",
+    "category": "zodiac",
+    "symbol": "♑",
+    "stone": "アメジスト",
+    "action": "今日の意図を1行ノートに記す。"
+  },
+  {
+    "id": "z-aquarius",
+    "label": "水瓶座 × ラブラドライト",
+    "category": "zodiac",
+    "symbol": "♒",
+    "stone": "ラブラドライト",
+    "action": "いつもと違う場所で1分だけ座る。視点を変える。"
+  },
+  {
+    "id": "z-pisces",
+    "label": "魚座 × アクアマリン",
+    "category": "zodiac",
+    "symbol": "♓",
+    "stone": "アクアマリン",
+    "action": "水を一杯ゆっくり飲み、心をクリアに。"
+  },
+  {
+    "id": "p-sun",
+    "label": "太陽 × クリスタル",
+    "category": "planet",
+    "symbol": "☉",
+    "stone": "クリスタル",
+    "action": "光を浴びて1分。できれば窓際へ。背筋を伸ばす。"
+  },
+  {
+    "id": "p-moon",
+    "label": "月 × セレナイト",
+    "category": "planet",
+    "symbol": "☾",
+    "stone": "セレナイト",
+    "action": "静けさを思い出す。目を閉じて深呼吸3回。"
+  },
+  {
+    "id": "p-mercury",
+    "label": "水星 × フローライト",
+    "category": "planet",
+    "symbol": "☿",
+    "stone": "フローライト",
+    "action": "1分ブレインダンプ。頭の中の言葉を紙に吐き出す。"
+  },
+  {
+    "id": "p-venus",
+    "label": "金星 × ローズクォーツ",
+    "category": "planet",
+    "symbol": "♀",
+    "stone": "ローズクォーツ",
+    "action": "自分の好きなものを1つ眺める or 触れる。"
+  },
+  {
+    "id": "p-mars",
+    "label": "火星 × ガーネット",
+    "category": "planet",
+    "symbol": "♂",
+    "stone": "ガーネット",
+    "action": "体を動かす。スクワット10回 or 肩回し20回。"
+  },
+  {
+    "id": "p-jupiter",
+    "label": "木星 × イエローカルサイト",
+    "category": "planet",
+    "symbol": "♃",
+    "stone": "イエローカルサイト",
+    "action": "今日の『広げたいこと』を1行書く。"
+  },
+  {
+    "id": "p-saturn",
+    "label": "土星 × スモーキークォーツ",
+    "category": "planet",
+    "symbol": "♄",
+    "stone": "スモーキークォーツ",
+    "action": "今日やらないことを1つ決める。境界線を引く。"
+  },
+  {
+    "id": "p-uranus",
+    "label": "天王星 × ヘマタイト",
+    "category": "planet",
+    "symbol": "♅",
+    "stone": "ヘマタイト",
+    "action": "ルーティンを1つだけ変える。利き手と逆で歯磨きなど。"
+  },
+  {
+    "id": "p-neptune",
+    "label": "海王星 × ラリマー",
+    "category": "planet",
+    "symbol": "♆",
+    "stone": "ラリマー",
+    "action": "1分だけ目を閉じて、浮かぶイメージを眺める。"
+  },
+  {
+    "id": "p-pluto",
+    "label": "冥王星 × ブラックトルマリン",
+    "category": "planet",
+    "symbol": "♇",
+    "stone": "ブラックトルマリン",
+    "action": "小さな『手放し』を1つ。開いているタブを1つ閉じる。"
+  },
+  {
+    "id": "e-fire",
+    "label": "火 × カーネリアン",
+    "category": "element",
+    "symbol": "🔥",
+    "stone": "カーネリアン",
+    "action": "3分だけ情熱タスク。勢い重視で着手。"
+  },
+  {
+    "id": "e-earth",
+    "label": "地 × マラカイト",
+    "category": "element",
+    "symbol": "⛰️",
+    "stone": "マラカイト",
+    "action": "足の裏を感じる。立って30秒、体重を感じる。"
+  },
+  {
+    "id": "e-air",
+    "label": "風 × クリソプレーズ",
+    "category": "element",
+    "symbol": "💨",
+    "stone": "クリソプレーズ",
+    "action": "部屋の空気を入れ替える。窓を少し開ける。"
+  },
+  {
+    "id": "e-water",
+    "label": "水 × ブルーレースアゲート",
+    "category": "element",
+    "symbol": "💧",
+    "stone": "ブルーレースアゲート",
+    "action": "コップ1杯の水。飲みながら3呼吸。"
+  },
+  {
+    "id": "w-meteor",
+    "label": "メテオライト × 隕石",
+    "category": "wild",
+    "symbol": "☄️",
+    "stone": "隕石",
+    "action": "『思いつき』を1つやる。結果は気にしない。"
+  },
+  {
+    "id": "w-aurora",
+    "label": "オーロラ × オパライト",
+    "category": "wild",
+    "symbol": "🌈",
+    "stone": "オパライト",
+    "action": "好きな音楽を1曲フル再生。体を少し揺らす。"
+  },
+  {
+    "id": "w-comet",
+    "label": "彗星 × ムーカイト",
+    "category": "wild",
+    "symbol": "🪐",
+    "stone": "ムーカイト",
+    "action": "未読のメッセージを1つだけ既読にして返信。"
+  },
+  {
+    "id": "w-void",
+    "label": "虚空 × ブラックオニキス",
+    "category": "wild",
+    "symbol": "⚫",
+    "stone": "ブラックオニキス",
+    "action": "あえて何もしない1分。目を閉じ、空白を味わう。"
+  }
+]

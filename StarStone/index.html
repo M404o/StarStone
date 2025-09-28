@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StarStone Daily Deck</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>StarStone Daily Deck</h1>
+      <p class="tagline">毎朝1枚、宇宙の小さな儀式。</p>
+    </header>
+
+    <section id="card-area">
+      <canvas id="card-canvas" width="800" height="1200" aria-label="card canvas"></canvas>
+      <div id="card-content" class="hidden">
+        <div class="symbol" id="symbol"></div>
+        <div class="label" id="label"></div>
+        <div class="action" id="action"></div>
+      </div>
+    </section>
+
+    <section id="controls">
+      <button id="draw-btn">カードをめくる</button>
+      <button id="save-btn" disabled>画像を保存</button>
+      <button id="copy-btn" disabled>テキストをコピー</button>
+      <label class="toggle">
+        <input type="checkbox" id="brand-mark" checked>
+        <span>下部にクレジットを入れる</span>
+      </label>
+    </section>
+
+    <footer>
+      <small>© StarStone Deck — Make your morning a little cosmic.</small>
+    </footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
