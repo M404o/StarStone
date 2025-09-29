@@ -3,23 +3,27 @@ html,body{
   margin:0;padding:0;background:#090c14;color:#e7ebff;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,'Hiragino Sans','Noto Sans JP','Yu Gothic',Meiryo,sans-serif;
 }
-main{max-width:960px;margin:0 auto;padding:24px}
+main{max-width:980px;margin:0 auto;padding:24px}
 header{text-align:center;margin-bottom:12px}
 h1{margin:0 0 6px;font-size:28px;letter-spacing:.02em}
 .badge{font-size:14px;padding:2px 8px;border:1px solid #2e3650;border-radius:999px;margin-left:6px;opacity:.7}
 .tagline{opacity:.75;margin:0 0 16px}
-#card-area{display:flex;flex-direction:column;align-items:center}
 
+#panel{display:flex;justify-content:center}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.mode{margin-left:8px}
+.toggle{display:flex;align-items:center;gap:6px;opacity:.9}
+
+#card-area{display:flex;flex-direction:column;align-items:center;margin-top:10px}
 .card-wrap{perspective:1200px}
 #card-canvas{
-  border-radius:20px; background:#101728;
+  border-radius:20px;background:#101728;
   box-shadow:0 16px 40px rgba(0,0,0,.5);
-  transform-style:preserve-3d; transition:transform .5s;
+  transform-style:preserve-3d;transition:transform .5s;
 }
-#card-canvas.flipping{ transform:rotateY(180deg) }
+#card-canvas.flipping{transform:rotateY(180deg)}
 
 #controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:16px 0 8px}
 button{border:1px solid #2e3650;background:#141a2b;color:#e7ebff;padding:10px 16px;border-radius:10px;cursor:pointer}
 button:disabled{opacity:.5;cursor:not-allowed}
-.toggle{display:flex;align-items:center;gap:8px;opacity:.9}
 footer{opacity:.5;text-align:center;margin-top:8px}
