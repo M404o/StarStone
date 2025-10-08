@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StarStone Daily Deck - Rotating Gems</title>
+  <style>
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:#0b0f19;color:#e7ebff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP','Yu Gothic UI','Yu Gothic',Meiryo,sans-serif}
+    main{max-width:960px;margin:0 auto;padding:24px}
+    header{text-align:center;margin-bottom:12px}
+    h1{margin:0 0 6px 0;font-size:28px;letter-spacing:0.02em}
+    .badge{font-size:14px;padding:2px 8px;border:1px solid #2e3650;border-radius:999px;margin-left:6px;opacity:.7}
+    .tagline{opacity:.75;margin:0 0 16px 0}
+    #card-area{display:flex;flex-direction:column;align-items:center}
+    .card-wrap{perspective:1200px}
+    #card-canvas{box-shadow:0 8px 32px rgba(0,0,0,.6);background:#101728;max-width:100%;height:auto}
+    #controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:16px 0 8px;align-items:center}
+    button{border:1px solid #2e3650;background:#141a2b;color:#e7ebff;padding:10px 16px;border-radius:10px;cursor:pointer;font-size:15px}
+    button:hover{background:#1a2338}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    footer{opacity:.5;text-align:center;margin-top:24px}
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>StarStone Daily Deck <span class="badge">Rotating</span></h1>
+      <p class="tagline">毎朝1枚、宇宙の小さな儀式。— Gem & Moon Visuals</p>
+    </header>
+
+    <section id="card-area">
+      <div class="card-wrap">
+        <canvas id="card-canvas" width="800" height="1200"></canvas>
+      </div>
+    </section>
+
+    <section id="controls">
+      <button id="draw-btn">カードをめくる ✨</button>
+      <button id="save-btn" disabled>画像を保存</button>
+    </section>
+
+    <footer>
+      <small>© StarStone Deck — Make your morning a little cosmic.</small>
+    </footer>
+  </main>
+  <script>
+    // ===== DECK DATA with cuts assigned =====
+    const DECK = [
+      {"id":"z-aries","label":"牡羊座 × ルビー","category":"zodiac","symbol":"♈","stone":"ルビー","action":"小さく勢いをつける。30秒だけ『今すぐできる一歩』を実行。","cut":"marquise"},
+      {"id":"z-taurus","label":"牡牛座 × エメラルド","category":"zodiac","symbol":"♉","stone":"エメラルド","action":"五感を満たす。温かい飲み物をゆっくり味わう。","cut":"emerald"},
+      {"id":"z-gemini","label":"双子座 × シトリン","category":"zodiac","symbol":"♊","stone":"シトリン","action":"頭の換気。窓を開け、深呼吸3回してから1行メモ。","cut":"oval"},
+      {"id":"z-cancer","label":"蟹座 × ムーンストーン","category":"zodiac","symbol":"♋","stone":"ムーンストーン","action":"自分に優しい言葉を一つ、声に出して伝える。","cut":"cabochon"},
+      {"id":"z-leo","label":"獅子座 × タイガーアイ","category":"zodiac","symbol":"♌","stone":"タイガーアイ","action":"姿勢を正して1分。胸を開き、今日はこれをやると宣言。","cut":"cabochon"},
+      {"id":"z-virgo","label":"乙女座 × ペリドット","category":"zodiac","symbol":"♍","stone":"ペリドット","action":"机上を60秒だけ整える。不要なものを1つだけ退ける。","cut":"oval"},
+      {"id":"z-libra","label":"天秤座 × ラピスラズリ","category":"zodiac","symbol":"♎","stone":"ラピスラズリ","action":"誰か一人に短い感謝メッセージを送る。","cut":"round"},
+      {"id":"z-scorpio","label":"蠍座 × オブシディアン","category":"zodiac","symbol":"♏","stone":"オブシディアン","action":"余計なタスクを1つだけ切り捨てる。『今日はやらない』を選ぶ。","cut":"emerald"},
+      {"id":"z-sagittarius","label":"射手座 × ターコイズ","category":"zodiac","symbol":"♐","stone":"ターコイズ","action":"外を10歩だけ歩く。空を見上げて深呼吸。","cut":"cabochon"},
+      {"id":"z-capricorn","label":"山羊座 × アメジスト","category":"zodiac","symbol":"♑","stone":"アメジスト","action":"今日の意図を1行ノートに記す。","cut":"round"},
+      {"id":"z-aquarius","label":"水瓶座 × ラブラドライト","category":"zodiac","symbol":"♒","stone":"ラブラドライト","action":"いつもと違う場所で1分だけ座る。視点を変える。","cut":"oval"},
+      {"id":"z-pisces","label":"魚座 × アクアマリン","category":"zodiac","symbol":"♓","stone":"アクアマリン","action":"水を一杯ゆっくり飲み、心をクリアに。","cut":"oval"},
+      {"id":"p-sun","label":"太陽 × クリスタル","category":"planet","symbol":"☉","stone":"クリスタル","action":"光を浴びて1分。できれば窓際へ。背筋を伸ばす。","cut":"brilliant"},
+      {"id":"p-moon","label":"月 × セレナイト","category":"planet","symbol":"☾","stone":"セレナイト","action":"静けさを思い出す。目を閉じて深呼吸3回。","cut":"cabochon"},
+      {"id":"p-mercury","label":"水星 × フローライト","category":"planet","symbol":"☿","stone":"フローライト","action":"1分ブレインダンプ。頭の中の言葉を紙に吐き出す。","cut":"round"},
+      {"id":"p-venus","label":"金星 × ローズクォーツ","category":"planet","symbol":"♀","stone":"ローズクォーツ","action":"自分の好きなものを1つ眺める or 触れる。","cut":"heart"},
+      {"id":"p-mars","label":"火星 × ガーネット","category":"planet","symbol":"♂","stone":"ガーネット","action":"体を動かす。スクワット10回 or 肩回し20回。","cut":"marquise"},
+      {"id":"p-jupiter","label":"木星 × イエローカルサイト","category":"planet","symbol":"♃","stone":"イエローカルサイト","action":"今日の『広げたいこと』を1行書く。","cut":"round"},
+      {"id":"p-saturn","label":"土星 × スモーキークォーツ","category":"planet","symbol":"♄","stone":"スモーキークォーツ","action":"今日やらないことを1つ決める。境界線を引く。","cut":"emerald"},
+      {"id":"p-uranus","label":"天王星 × ヘマタイト","category":"planet","symbol":"♅","stone":"ヘマタイト","action":"ルーティンを1つだけ変える。利き手と逆で歯磨きなど。","cut":"round"},
+      {"id":"p-neptune","label":"海王星 × ラリマー","category":"planet","symbol":"♆","stone":"ラリマー","action":"1分だけ目を閉じて、浮かぶイメージを眺める。","cut":"oval"},
+      {"id":"p-pluto","label":"冥王星 × ブラックトルマリン","category":"planet","symbol":"♇","stone":"ブラックトルマリン","action":"小さな『手放し』を1つ。開いているタブを1つ閉じる。","cut":"emerald"},
+      {"id":"e-fire","label":"火 × カーネリアン","category":"element","symbol":"🔥","stone":"カーネリアン","action":"3分だけ情熱タスク。勢い重視で着手。","cut":"marquise"},
+      {"id":"e-earth","label":"地 × マラカイト","category":"element","symbol":"⛰️","stone":"マラカイト","action":"足の裏を感じる。立って30秒、体重を感じる。","cut":"cabochon"},
+      {"id":"e-air","label":"風 × クリソプレーズ","category":"element","symbol":"💨","stone":"クリソプレーズ","action":"部屋の空気を入れ替える。窓を少し開ける。","cut":"oval"},
+      {"id":"e-water","label":"水 × ブルーレースアゲート","category":"element","symbol":"💧","stone":"ブルーレースアゲート","action":"コップ1杯の水。飲みながら3呼吸。","cut":"cabochon"},
+      {"id":"w-meteor","label":"メテオライト × 隕石","category":"wild","symbol":"☄️","stone":"隕石","action":"『思いつき』を1つやる。結果は気にしない。","cut":"round"},
+      {"id":"w-aurora","label":"オーロラ × オパライト","category":"wild","symbol":"🌈","stone":"オパライト","action":"好きな音楽を1曲フル再生。体を少し揺らす。","cut":"brilliant"},
+      {"id":"w-comet","label":"彗星 × ムーカイト","category":"wild","symbol":"🪐","stone":"ムーカイト","action":"未読のメッセージを1つだけ既読にして返信。","cut":"oval"},
+      {"id":"w-void","label":"虚空 × ブラックオニキス","category":"wild","symbol":"⚫","stone":"ブラックオニキス","action":"あえて何もしない1分。目を閉じ、空白を味わう。","cut":"round"}
+    ];
+
+    // ===== Stone palettes =====
+    const STONE = {
+      "アクアマリン":["#0c3850","#3aa9de","#c7ecff","#eaf7ff"],
+      "アメジスト":["#2c0a56","#7b4bd6","#d9c8ff","#ffffff"],
+      "ローズクォーツ":["#5a274a","#d17aa8","#ffd6e9","#ffffff"],
+      "ガーネット":["#3b0013","#a11335","#ff5b76","#ffffff"],
+      "ラピスラズリ":["#091b5a","#2960d1","#a9c4ff","#ffffff"],
+      "ムーンストーン":["#22304d","#7aa1ff","#eaf0ff","#ffffff"],
+      "ルビー":["#4a001e","#c41e4a","#ff6d9a","#ffffff"],
+      "タイガーアイ":["#3e1c00","#c78117","#ffd27a","#fff3cc"],
+      "セレナイト":["#1d2130","#9ea9c9","#f2f6ff","#ffffff"],
+      "ラブラドライト":["#0b2b3f","#3aa0c9","#bff1ff","#ffffff"],
+      "ヘマタイト":["#22262c","#7f8c99","#d6dde6","#ffffff"],
+      "オブシディアン":["#0c0f14","#3b4958","#c6d3e1","#ffffff"],
+      "ブラックトルマリン":["#0b0c10","#384353","#cad6e6","#ffffff"],
+      "クリスタル":["#1a2448","#9fb3ff","#eef4ff","#ffffff"],
+      "フローライト":["#2a145a","#8e68e6","#decfff","#ffffff"],
+      "ペリドット":["#1a3a0b","#63c214","#cfff83","#ffffff"],
+      "シトリン":["#3a2500","#d89c18","#ffe089","#ffffff"],
+      "隕石":["#141a26","#718198","#d0d9e6","#ffffff"],
+      "エメラルド":["#0a3b1e","#2d9c5a","#a8ffce","#ffffff"],
+      "ターコイズ":["#0f4550","#3eb5c9","#b8f3ff","#ffffff"],
+      "イエローカルサイト":["#3b2f00","#d4a917","#ffe87a","#ffffff"],
+      "スモーキークォーツ":["#2b2420","#7a6b5e","#d4cec6","#ffffff"],
+      "ラリマー":["#0e4a5f","#4db5d4","#c8f0ff","#ffffff"],
+      "カーネリアン":["#4a1500","#d15a1e","#ffb88a","#ffffff"],
+      "マラカイト":["#0d3322","#2a8a5f","#a3ffd4","#ffffff"],
+      "クリソプレーズ":["#1a3d28","#5cad7e","#c5ffe0","#ffffff"],
+      "ブルーレースアゲート":["#1e3d52","#6b9fc4","#d0ebff","#ffffff"],
+      "オパライト":["#2d2044","#9b78d9","#ead8ff","#ffffff"],
+      "ムーカイト":["#3d2018","#a86f48","#ffd4b0","#ffffff"],
+      "ブラックオニキス":["#0a0a0c","#2b2d32","#b8bcc4","#ffffff"]
+    };
+
+    function seededRandom(seed){
+      let s = 0; for (let i=0;i<seed.length;i++) s = (s*31 + seed.charCodeAt(i)) >>> 0;
+      if (s <= 0) s = 1;
+      return function(){ s = (s * 1664525 + 1013904223) >>> 0; return (s & 0xffffffff) / 0x100000000; };
+    }
+
+    function hexWithAlpha(hex, a){
+      const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      if (!m) return hex;
+      const r = parseInt(m[1],16), g = parseInt(m[2],16), b = parseInt(m[3],16);
+      return `rgba(${r},${g},${b},${a})`;
+    }
+
+    function drawFixedBG(ctx, w, h){
+      const g = ctx.createLinearGradient(0,0,w,h);
+      g.addColorStop(0, "#090c14"); g.addColorStop(1, "#111b2e");
+      ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+      const rnd = seededRandom("starstone_bg_v1");
+      for (let i=0;i<160;i++){
+        const x = rnd()*w, y = rnd()*h, r = rnd()*1.7 + 0.2;
+        if(r > 0) {
+          ctx.fillStyle = `rgba(255,255,255,${0.25 + rnd()*0.7})`;
+          ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+        }
+      }
+    }
+
+    function glint(ctx, x, y, r){
+      if(r <= 0) return;
+      const g = ctx.createRadialGradient(x,y,0,x,y,r);
+      g.addColorStop(0, "rgba(255,255,255,0.95)");
+      g.addColorStop(1, "rgba(255,255,255,0.0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    }
+
+    // ===== GEM CUTS =====
+    
+    // Heart cut
+    function heartPath(ctx, cx, cy, R){
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + R*0.55);
+      ctx.bezierCurveTo(cx - R, cy - R*0.2, cx - R*0.55, cy - R*0.95, cx, cy - R*0.55);
+      ctx.bezierCurveTo(cx + R*0.55, cy - R*0.95, cx + R, cy - R*0.2, cx, cy + R*0.55);
+      ctx.closePath();
+    }
+
+    function drawHeartFaceted(ctx, cx, cy, R, pal, seedKey){
+      const g = ctx.createRadialGradient(cx, cy - R*0.2, R*0.2, cx, cy, R);
+      g.addColorStop(0, pal[2]);
+      g.addColorStop(0.55, pal[1]);
+      g.addColorStop(1, pal[0]);
+      ctx.save();
+      heartPath(ctx, cx, cy, R);
+      ctx.fillStyle = g;
+      ctx.fill();
+      ctx.clip();
+
+      const rnd = seededRandom("heart_"+seedKey);
+      for(let i=0;i<18;i++){
+        const a = (i/18)*Math.PI*2 + rnd()*0.2;
+        const x1 = cx + Math.cos(a)*R*0.1, y1 = cy + Math.sin(a)*R*0.1;
+        const x2 = cx + Math.cos(a)*R*1.1, y2 = cy + Math.sin(a)*R*1.1;
+        const lg = ctx.createLinearGradient(x1,y1,x2,y2);
+        const shade = 0.10 + rnd()*0.22;
+        lg.addColorStop(0, hexWithAlpha(pal[2], 0.10));
+        lg.addColorStop(0.5, hexWithAlpha(pal[2], 0.18 + shade));
+        lg.addColorStop(1, hexWithAlpha(pal[0], 0.08));
+        ctx.fillStyle = lg;
+        const w = 4 + rnd()*3;
+        ctx.beginPath();
+        ctx.moveTo(x1 - w, y1 - w);
+        ctx.lineTo(x1 + w, y1 + w);
+        ctx.lineTo(x2 + w, y2 + w);
+        ctx.lineTo(x2 - w, y2 - w);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+      ctx.save();
+      heartPath(ctx, cx, cy, R*1.02);
+      ctx.strokeStyle = hexWithAlpha(pal[3], 0.75);
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      ctx.restore();
+
+      glint(ctx, cx - R*0.25, cy - R*0.45, R*0.5);
+      glint(ctx, cx + R*0.20, cy + R*0.05, R*0.28);
+    }
+
+    // Round cut
+    function drawRoundFaceted(ctx, cx, cy, R, pal, seedKey){
+      if(R <= 0) R = 100;
+      const rnd = seededRandom("round_"+seedKey);
+      const rg = ctx.createRadialGradient(cx,cy,R*0.18,cx,cy,R);
+      rg.addColorStop(0, pal[1]);
+      rg.addColorStop(0.65, pal[0]);
+      rg.addColorStop(1, "#000");
+      ctx.fillStyle=rg; 
+      ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
+
+      ctx.save(); 
+      ctx.beginPath(); 
+      if(R > 0) ctx.arc(cx,cy,R,0,Math.PI*2); 
+      ctx.clip();
+      for(let i=0;i<28;i++){
+        const a1=rnd()*Math.PI*2, a2=a1+(rnd()*0.5+0.15);
+        const r1=R*(0.35+rnd()*0.55), r2=R*(0.35+rnd()*0.55);
+        const p1=[cx+Math.cos(a1)*r1, cy+Math.sin(a1)*r1];
+        const p2=[cx+Math.cos(a2)*r2, cy+Math.sin(a2)*r2];
+        const p3=[cx+Math.cos((a1+a2)/2)*R*(0.15+rnd()*0.3),
+                  cy+Math.sin((a1+a2)/2)*R*(0.15+rnd()*0.3)];
+        const grad = ctx.createLinearGradient(p1[0],p1[1],p2[0],p2[1]);
+        const shade = 0.25 + rnd()*0.5;
+        grad.addColorStop(0, hexWithAlpha(pal[1],0.10));
+        grad.addColorStop(0.5, hexWithAlpha(pal[2],0.18+shade*0.15));
+        grad.addColorStop(1, hexWithAlpha(pal[0],0.10));
+        ctx.fillStyle=grad;
+        ctx.beginPath(); 
+        ctx.moveTo(p1[0],p1[1]); 
+        ctx.lineTo(p2[0],p2[1]); 
+        ctx.lineTo(p3[0],p3[1]); 
+        ctx.closePath(); 
+        ctx.fill();
+      }
+      ctx.restore();
+
+      const rim = ctx.createRadialGradient(cx,cy,R*0.9,cx,cy,R*1.05);
+      rim.addColorStop(0,"transparent"); 
+      rim.addColorStop(1, hexWithAlpha(pal[3],0.6));
+      ctx.fillStyle=rim; 
+      if(R > 0) {
+        ctx.beginPath(); ctx.arc(cx,cy,R*1.05,0,Math.PI*2); ctx.fill();
+      }
+      glint(ctx, cx-R*0.35, cy-R*0.45, R*0.55);
+      glint(ctx, cx+R*0.25, cy+R*0.10, R*0.35);
+    }
+
+    // Marquise cut
+    function drawMarquiseFaceted(ctx, cx, cy, R, pal, seedKey){
+      const L = R*1.7, W = R*0.85;
+      const grad = ctx.createLinearGradient(cx-L/2, cy, cx+L/2, cy);
+      grad.addColorStop(0, pal[0]); 
+      grad.addColorStop(0.5, pal[1]); 
+      grad.addColorStop(1, pal[0]);
+      ctx.fillStyle=grad;
+      ctx.beginPath();
+      ctx.moveTo(cx-L/2, cy);
+      ctx.quadraticCurveTo(cx-L/4, cy-W, cx, cy-W);
+      ctx.quadraticCurveTo(cx+L/4, cy-W, cx+L/2, cy);
+      ctx.quadraticCurveTo(cx+L/4, cy+W, cx, cy+W);
+      ctx.quadraticCurveTo(cx-L/4, cy+W, cx-L/2, cy);
+      ctx.closePath(); 
+      ctx.fill();
+
+      const rnd = seededRandom("marq_"+seedKey);
+      ctx.save(); ctx.clip();
+      for(let i=0;i<18;i++){
+        const t = (i+1)/19;
+        const x = cx-L/2 + L*t;
+        const g = ctx.createLinearGradient(x, cy-W, x, cy+W);
+        const shade = 0.12 + rnd()*0.35;
+        g.addColorStop(0, hexWithAlpha(pal[2], 0.10));
+        g.addColorStop(0.5, hexWithAlpha(pal[2], 0.18 + shade));
+        g.addColorStop(1, hexWithAlpha(pal[0], 0.10));
+        ctx.fillStyle = g;
+        ctx.fillRect(x-2, cy-W, 4, W*2);
+      }
+      ctx.restore();
+
+      ctx.strokeStyle = hexWithAlpha(pal[3], 0.8);
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(cx-L/2, cy);
+      ctx.quadraticCurveTo(cx-L/4, cy-W, cx, cy-W);
+      ctx.quadraticCurveTo(cx+L/4, cy-W, cx+L/2, cy);
+      ctx.quadraticCurveTo(cx+L/4, cy+W, cx, cy+W);
+      ctx.quadraticCurveTo(cx-L/4, cy+W, cx-L/2, cy);
+      ctx.closePath(); 
+      ctx.stroke();
+
+      glint(ctx, cx-L*0.15, cy-W*0.6, R*0.45);
+      glint(ctx, cx+L*0.10, cy+W*0.25, R*0.32);
+    }
+
+    // Oval cut
+    function drawOvalFaceted(ctx, cx, cy, R, pal, seedKey){
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(1.2, 1.0);
+      drawRoundFaceted(ctx, 0, 0, R, pal, seedKey);
+      ctx.restore();
+    }
+
+    // Emerald cut
+    function drawEmeraldFaceted(ctx, cx, cy, R, pal, seedKey){
+      const s = R*0.9;
+      const pts = [
+        [cx-s*0.6, cy-s], [cx+s*0.6, cy-s],
+        [cx+s, cy-s*0.6], [cx+s, cy+s*0.6],
+        [cx+s*0.6, cy+s], [cx-s*0.6, cy+s],
+        [cx-s, cy+s*0.6], [cx-s, cy-s*0.6]
+      ];
+      const g = ctx.createLinearGradient(cx-s, cy-s, cx+s, cy+s);
+      g.addColorStop(0, pal[0]); 
+      g.addColorStop(1, pal[1]);
+      ctx.fillStyle=g; 
+      ctx.beginPath();
+      pts.forEach((p,i)=> i? ctx.lineTo(p[0],p[1]) : ctx.moveTo(p[0],p[1]));
+      ctx.closePath(); 
+      ctx.fill();
+
+      const rnd = seededRandom("emer_"+seedKey);
+      ctx.save(); ctx.clip();
+      for(let i=0;i<16;i++){
+        const t = 0.1 + 0.7*(i/16);
+        ctx.strokeStyle = hexWithAlpha(pal[2], 0.12 + 0.12*(i/16));
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(cx - s*0.6*t, cy - s*t);
+        ctx.lineTo(cx + s*0.6*t, cy - s*t);
+        ctx.lineTo(cx + s*t, cy - s*0.6*t);
+        ctx.lineTo(cx + s*t, cy + s*0.6*t);
+        ctx.lineTo(cx + s*0.6*t, cy + s*t);
+        ctx.lineTo(cx - s*0.6*t, cy + s*t);
+        ctx.lineTo(cx - s*t, cy + s*0.6*t);
+        ctx.lineTo(cx - s*t, cy - s*0.6*t);
+        ctx.closePath(); 
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      ctx.strokeStyle = hexWithAlpha(pal[3], 0.85);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      pts.forEach((p,i)=> i? ctx.lineTo(p[0],p[1]) : ctx.moveTo(p[0],p[1]));
+      ctx.closePath(); 
+      ctx.stroke();
+
+      glint(ctx, cx - s*0.35, cy - s*0.35, R*0.45);
+      glint(ctx, cx + s*0.15, cy + s*0.05, R*0.28);
+    }
+
+    // Cabochon (smooth dome)
+    function drawCabochon(ctx, cx, cy, R, pal){
+      if(R <= 0) R = 100;
+      const rg = ctx.createRadialGradient(cx,cy,R*0.2,cx,cy,R);
+      rg.addColorStop(0, pal[2]); 
+      rg.addColorStop(0.65, pal[1]); 
+      rg.addColorStop(1, pal[0]);
+      ctx.fillStyle=rg; 
+      ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
+      glint(ctx, cx-R*0.35, cy-R*0.45, R*0.55);
+      glint(ctx, cx+R*0.25, cy+R*0.10, R*0.35);
+      const rim = ctx.createRadialGradient(cx,cy,R*0.9,cx,cy,R*1.05);
+      rim.addColorStop(0,"transparent"); 
+      rim.addColorStop(1, hexWithAlpha(pal[3],0.55));
+      ctx.fillStyle=rim; 
+      if(R > 0) {
+        ctx.beginPath(); ctx.arc(cx,cy,R*1.05,0,Math.PI*2); ctx.fill();
+      }
+    }
+
+    // Brilliant cut (💎 diamond top view)
+    function drawBrilliantFaceted(ctx, cx, cy, R, pal, seedKey){
+      if(R <= 0) R = 100;
+      const rnd = seededRandom("bril_"+seedKey);
+      
+      // Table (top flat)
+      ctx.fillStyle = pal[2];
+      ctx.beginPath();
+      ctx.arc(cx, cy, R*0.3, 0, Math.PI*2);
+      ctx.fill();
+
+      // Crown facets (8 main kite shapes)
+      for(let i=0;i<8;i++){
+        const a1 = (i/8)*Math.PI*2;
+        const a2 = ((i+1)/8)*Math.PI*2;
+        const r1 = R*0.3, r2 = R*0.95;
+        
+        const grad = ctx.createLinearGradient(
+          cx + Math.cos(a1)*r1, cy + Math.sin(a1)*r1,
+          cx + Math.cos((a1+a2)/2)*r2, cy + Math.sin((a1+a2)/2)*r2
+        );
+        grad.addColorStop(0, pal[2]);
+        grad.addColorStop(0.5, pal[1]);
+        grad.addColorStop(1, pal[0]);
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a1)*r1, cy + Math.sin(a1)*r1);
+        ctx.lineTo(cx + Math.cos((a1+a2)/2)*r2, cy + Math.sin((a1+a2)/2)*r2);
+        ctx.lineTo(cx + Math.cos(a2)*r1, cy + Math.sin(a2)*r1);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Star facets (between main facets)
+      for(let i=0;i<8;i++){
+        const a1 = (i/8)*Math.PI*2 + Math.PI/16;
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+        grad.addColorStop(0, hexWithAlpha(pal[2], 0.4));
+        grad.addColorStop(1, hexWithAlpha(pal[0], 0.1));
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a1)*R*0.3, cy + Math.sin(a1)*R*0.3);
+        ctx.lineTo(cx + Math.cos(a1)*R*0.95, cy + Math.sin(a1)*R*0.95);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Rim highlight
+      const rim = ctx.createRadialGradient(cx,cy,R*0.9,cx,cy,R*1.05);
+      rim.addColorStop(0,"transparent");
+      rim.addColorStop(1, hexWithAlpha(pal[3],0.75));
+      ctx.fillStyle=rim;
+      ctx.beginPath(); ctx.arc(cx,cy,R*1.05,0,Math.PI*2); ctx.fill();
+
+      // Central sparkle
+      glint(ctx, cx, cy, R*0.25);
+      glint(ctx, cx - R*0.4, cy - R*0.3, R*0.4);
+      glint(ctx, cx + R*0.35, cy + R*0.2, R*0.35);
+    }
+
+    // Dispatcher
+    function drawGemFaceted(ctx, cut, cx, cy, R, pal, seedKey){
+      switch(cut){
+        case "heart": return drawHeartFaceted(ctx,cx,cy,R,pal,seedKey);
+        case "marquise": return drawMarquiseFaceted(ctx,cx,cy,R,pal,seedKey);
+        case "oval": return drawOvalFaceted(ctx,cx,cy,R,pal,seedKey);
+        case "emerald": return drawEmeraldFaceted(ctx,cx,cy,R,pal,seedKey);
+        case "cabochon": return drawCabochon(ctx,cx,cy,R,pal);
+        case "brilliant": return drawBrilliantFaceted(ctx,cx,cy,R,pal,seedKey);
+        case "round":
+        default: return drawRoundFaceted(ctx,cx,cy,R,pal,seedKey);
+      }
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+      const words = text.split('');
+      let line = '';
+      const lines = [];
+      for(let i = 0; i < words.length; i++){
+        const testLine = line + words[i];
+        const metrics = ctx.measureText(testLine);
+        if(metrics.width > maxWidth && i > 0){
+          lines.push(line);
+          line = words[i];
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+      for(let j = 0; j < lines.length; j++){
+        ctx.fillText(lines[j], x, y + (j * lineHeight));
+      }
+    }
+
+    // ===== Animation loop =====
+    let animationId = null;
+    let angle = 0;
+    let currentCard = null;
+
+    function drawCardFrame(ctx, W, H, card){
+      drawFixedBG(ctx, W, H);
+      
+      // Border (sharp corners for gem card look)
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(200,220,255,.45)';
+      ctx.strokeRect(28,28,W-56,H-56);
+
+      // Title
+      ctx.fillStyle='#fff'; 
+      ctx.textAlign='center';
+      ctx.font='700 52px system-ui,-apple-system,Segoe UI,Roboto';
+      ctx.fillText(card.symbol + ' ' + card.label, W/2, 520);
+
+      // Divider
+      ctx.strokeStyle='rgba(200,220,255,.25)';
+      ctx.lineWidth=1; 
+      ctx.beginPath(); 
+      ctx.moveTo(120, 552); 
+      ctx.lineTo(W-120, 552); 
+      ctx.stroke();
+
+      // Action
+      ctx.font='26px system-ui,-apple-system,Segoe UI,Roboto';
+      ctx.textAlign='left'; 
+      ctx.fillStyle='#dbe2ff';
+      wrapText(ctx, '✨ ' + card.action, 100, 600, W-200, 40);
+
+      // Date
+      const d=new Date();
+      const ds=`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+      ctx.textAlign='right'; 
+      ctx.fillStyle='rgba(255,255,255,0.6)';
+      ctx.font='20px system-ui,-apple-system,Segoe UI,Roboto';
+      ctx.fillText(ds, W-50, H-50);
+    }
+
+    function runAnimation(card){
+      const canvas = document.getElementById('card-canvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      const pal = STONE[card.stone] || STONE["クリスタル"];
+      const cut = card.cut || "round";
+      const cx = W/2, cy = 280, R = 150;
+
+      if(animationId) cancelAnimationFrame(animationId);
+      angle = 0;
+
+      function tick(){
+        ctx.clearRect(0,0,W,H);
+        drawCardFrame(ctx, W, H, card);
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angle);
+        ctx.translate(-cx, -cy);
+        drawGemFaceted(ctx, cut, cx, cy, R, pal, card.stone);
+        ctx.restore();
+
+        angle += 0.005;
+        animationId = requestAnimationFrame(tick);
+      }
+      tick();
+    }
+
+    // ===== Main =====
+    const canvas = document.getElementById('card-canvas');
+    const drawBtn = document.getElementById('draw-btn');
+    const saveBtn = document.getElementById('save-btn');
+
+    drawBtn.addEventListener('click', ()=>{
+      const randomCard = DECK[Math.floor(Math.random() * DECK.length)];
+      currentCard = randomCard;
+      runAnimation(currentCard);
+      saveBtn.disabled = false;
+    });
+
+    saveBtn.addEventListener('click', ()=>{
+      if(!currentCard) return;
+      if(animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+      
+      // Redraw one frame without rotation for save
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      const pal = STONE[currentCard.stone] || STONE["クリスタル"];
+      const cut = currentCard.cut || "round";
+      const cx = W/2, cy = 280, R = 150;
+      
+      ctx.clearRect(0,0,W,H);
+      drawCardFrame(ctx, W, H, currentCard);
+      drawGemFaceted(ctx, cut, cx, cy, R, pal, currentCard.stone);
+      
+      const link = document.createElement('a');
+      link.download = `StarStone-${currentCard.stone}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      // Resume animation
+      runAnimation(currentCard);
+    });
+  </script>
+</body>
+</html>
